@@ -1,15 +1,12 @@
-﻿using System;
-using System.Collections.Generic;
+﻿
 using System.ComponentModel;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Input;
 
 namespace SudokuProjekt.ViewModel
 {
     using BaseClass;
     using SudokuProjekt.Model;
+    using System;
     using System.Windows;
     using System.Windows.Controls;
 
@@ -17,6 +14,77 @@ namespace SudokuProjekt.ViewModel
     {
         public event PropertyChangedEventHandler PropertyChanged;
 
+        #region zmienne
+        private int selectedPlayerIndex = 0;
+
+        public int SelectedPlayerIndex
+        {
+            get
+            {
+                return selectedPlayerIndex;
+            }
+            set
+            {
+                selectedPlayerIndex = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(selectedPlayerIndex)));
+            }
+        }
+
+        private string[] players = Database.getPlayers().ToArray();
+
+        public string[] Players
+        {
+            get { return players; }
+            set
+            {
+                players = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(players)));
+            }
+        }
+
+        public DateTime startGameTime = DateTime.Now;
+
+        private string newPlayerName = "Wpisz nick nowego gracza";
+        public string NewPlayerName
+        {
+            get
+            {
+                return newPlayerName;
+            }
+            set
+            {
+                newPlayerName = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(newPlayerName)));
+            }
+        }
+
+        private int difficulty = 0;
+
+        public static board currentSolution = new board();
+        public int Difficulty
+        {
+            get { return difficulty; }
+            set
+            {
+                difficulty = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(difficulty)));
+            }
+        }
+
+        private int[] hintCoordinates = { 0, 0 };
+
+        public int[] HintCoordinates
+        {
+            get { return hintCoordinates; }
+            set
+            {
+                HintCoordinates = value;
+                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(hintCoordinates)));
+            }
+        }
+        #endregion
+
+        #region rzędy z planszy
         private int[] row1 = new int[9];
         public int[] Row1
         {
@@ -25,7 +93,6 @@ namespace SudokuProjekt.ViewModel
             {
                 row1 = value;
                 PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(row1)));
-
             }
         }
 
@@ -117,42 +184,23 @@ namespace SudokuProjekt.ViewModel
             }
         }
 
-        private int difficulty = 0;
-        public int Difficulty
-        {
-            get { return difficulty; }
-            set
-            {
-                difficulty = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(difficulty)));
-            }
-        }
+        #endregion    
 
-        private int[] hintCoordinates = { 0, 0 };
+        #region podpięcie przycisków
 
-        public int[] HintCoordinates
-        {
-            get { return hintCoordinates; }
-            set
-            {
-                HintCoordinates = value;
-                PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(nameof(hintCoordinates)));
-            }
-        }
         private ICommand updateBoard;
-
         public ICommand UpdateBoard
         {
             get
             {
                 return updateBoard ?? (updateBoard = new RelayCommand(
-                 p => startGame(Difficulty),
-                 p => true
-                 ));
+                p => startGame(Difficulty),
+                p => true
+                ));
             }
         }
-        private ICommand checkBoard;
 
+        private ICommand checkBoard;
         public ICommand CheckBoard
         {
             get
@@ -176,10 +224,38 @@ namespace SudokuProjekt.ViewModel
             }
         }
 
+        private ICommand addPlayer;
 
-        public static board currentSolution = new board();
+        public ICommand AddPlayer
+        {
+            get
+            {
+                return addPlayer ?? (addPlayer = new RelayCommand(
+                p => addPlayerToDb(NewPlayerName),
+                p => true
+                ));
+            }
+        }
+        #endregion
+
+        #region metody
+        public void addPlayerToDb(string nick)
+        {
+            if (Database.getPlayers().Contains(NewPlayerName))
+            {
+                return;
+            }
+            else
+            {
+                Database.insertPlayer(nick);
+                Players = Database.getPlayers().ToArray();
+                return;
+            }
+        }
+        
         public void startGame(int difficulty)
         {
+            startGameTime = DateTime.Now;
             board[] fromDB = Database.getBoardTable(difficulty);
             board game = fromDB[0];
             board solution = fromDB[1];
@@ -293,13 +369,14 @@ namespace SudokuProjekt.ViewModel
             }
             else if (board.isCorrect(currentSolution))
             {
-                MessageBox.Show("Gratulacje, rozwiązałeś sudoku prawidłowo");
+                Database.insertGame(currentSolution.boardId, selectedPlayerIndex + 1, (int)(DateTime.Now - startGameTime).TotalSeconds);
+                MessageBox.Show("Rozwiązałeś sudoku prawidłowo", "Gratulacje");
             }
             else
             {
-                MessageBox.Show("Niestety, Twoje rozwiązanie nie jest prawidłowe");
+                MessageBox.Show("Niestety, Twoje rozwiązanie nie jest prawidłowe", "Sprawdzenie poprawności");
             }
         }
-
+        #endregion
     }
 }

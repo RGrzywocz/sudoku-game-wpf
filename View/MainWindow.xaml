@@ -7,7 +7,7 @@
         xmlns:vm="clr-namespace:SudokuProjekt.ViewModel"
         xmlns:m="clr-namespace:SudokuProjekt.Model"        
         mc:Ignorable="d"
-        Title="MainWindow" Height="450" Width="800">
+        Title="Sudoku" Height="700" Width="1050">
     <Window.DataContext>
         <vm:MainViewModel x:Name="viewModel"/>
     </Window.DataContext>
@@ -43,15 +43,14 @@
             <ColumnDefinition Width="5*"></ColumnDefinition>
         </Grid.ColumnDefinitions>
         <StackPanel>
-            <Button x:Name="start" Content="Rozpocznij grę" Command="{Binding UpdateBoard}" Padding="10" FontSize="20" Margin="10 15 10 40"></Button>
+            <Button x:Name="start" Content="Rozpocznij grę" Command="{Binding UpdateBoard}" Padding="10" FontSize="20" Margin="10 15 10 20"></Button>
             
             <TextBlock TextAlignment="Center" FontWeight="Bold">Poziom trudności</TextBlock>
-            <ComboBox SelectedIndex="{Binding Difficulty}" Margin="10 0 10 40">
+            <ComboBox SelectedIndex="{Binding Difficulty}" Margin="10 0 10 20">
                 <ComboBoxItem>Łatwy</ComboBoxItem>
-                <ComboBoxItem>Średnii</ComboBoxItem>
+                <ComboBoxItem>Średni</ComboBoxItem>
                 <ComboBoxItem>Trudny</ComboBoxItem>
             </ComboBox>
-            
             <Grid Margin="10 0 10 0">
                 <Grid.ColumnDefinitions>
                     <ColumnDefinition Width="1*"></ColumnDefinition>
@@ -88,8 +87,12 @@
                     <ComboBoxItem>9</ComboBoxItem>
                 </ComboBox>
             </Grid>
-            <Button Content="Uzyskaj podpowiedź" Command="{Binding Hint}" Margin="10 5 10 40"></Button>
-            <Button Content="Sprawdź poprawność" Command="{Binding CheckBoard}" Padding="10" FontSize="15"></Button>
+            <Button Content="Uzyskaj podpowiedź" Command="{Binding Hint}" Margin="10 5 10 20"></Button>
+            <Button Content="Sprawdź poprawność" Command="{Binding CheckBoard}" Padding="10" FontSize="15" Margin="10 0 10 20"></Button>
+            <TextBlock Grid.Column="1" TextAlignment="Center" FontWeight="Bold" Margin="10 0 0 0">Wybierz gracza</TextBlock>
+            <ComboBox x:Name="players" ItemsSource="{Binding Players}" SelectedIndex="{Binding SelectedPlayerIndex}" Margin="10 5 10 40"></ComboBox>
+            <TextBox BorderBrush="Black" BorderThickness="2px" Background="White" Text="{Binding NewPlayerName}" Margin="10 5 10 5"></TextBox>
+            <Button Content="Dodaj gracza" Command="{Binding AddPlayer}" Margin="10 5 10 20"></Button>
         </StackPanel>
         
         <Border BorderThickness="2" BorderBrush="Black" Grid.Column="1" Margin="10">

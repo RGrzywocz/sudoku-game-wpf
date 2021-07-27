@@ -1,10 +1,6 @@
 ﻿using MySqlConnector;
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows;
 
 namespace SudokuProjekt.Model
 {
@@ -21,13 +17,13 @@ namespace SudokuProjekt.Model
             return new MySqlConnection(connStrBuilder.ToString());
         }
 
+        public static int gameId = 0;
         public static string[] getBoard(int difficulty)
         {
             MySqlConnection connectionToDb = connection();
             MySqlCommand command = new MySqlCommand($"SELECT * FROM boards WHERE difficulty>{difficulty - 1} AND difficulty<{difficulty + 1}", connectionToDb);
             connectionToDb.Open();
             MySqlDataReader dataReader = command.ExecuteReader();
-
             if (dataReader.HasRows)
             {
                 int random = new Random().Next(1000);
@@ -37,6 +33,7 @@ namespace SudokuProjekt.Model
                 }
                 dataReader.Read();
                 string[] arrays = { dataReader["puzzle"].ToString(), dataReader["solution"].ToString() };
+                gameId = (int)dataReader["id"];
                 //MessageBox.Show(dataReader["difficulty"].ToString());
                 return arrays;
             }
@@ -45,7 +42,6 @@ namespace SudokuProjekt.Model
                 return null;
             }
         }
-
         public static board[] getBoardTable(int difficulty)
         {
             string[] boardsFromDB = getBoard(difficulty);
@@ -61,8 +57,53 @@ namespace SudokuProjekt.Model
                     solution[i, j] = (solutionFromDb[i * 9 + j] - '0' > 0) ? solutionFromDb[i * 9 + j] - '0' : 0;
                 }
             }
-            board[] game = new board[2] { new board(board), new board(solution) };
+            board[] game = new board[2] { new board(board), new board(solution, gameId) };
             return game;
         }
+        public static void insertGame(int idOfGame, int idOfPlayer, int time)
+        {
+            MySqlConnection connectionToDb = connection();
+            connectionToDb.Open();
+            MySqlCommand command = connectionToDb.CreateCommand();
+            command.CommandText = "insert into games(board_id, player_id, seconds, date_played) values(@board_id, @player_id, @seconds, @date_played)";
+            command.Parameters.AddWithValue("@board_id", idOfGame.ToString());
+            command.Parameters.AddWithValue("@player_id", idOfPlayer.ToString());
+            command.Parameters.AddWithValue("@seconds", time.ToString());
+            command.Parameters.AddWithValue("@date_played", DateTime.Now.ToString("yyyy-MM-dd"));
+            command.ExecuteNonQuery();
+            connectionToDb.Close();
+        }
+        public static void insertPlayer(string nick)
+        {
+            MySqlConnection connectionToDb = connection();
+            connectionToDb.Open();
+            MySqlCommand command = connectionToDb.CreateCommand();
+            command.CommandText = "insert into players(nick) values (@nick)";
+            command.Parameters.AddWithValue("@nick", nick);
+            command.ExecuteNonQuery();
+            connectionToDb.Close();
+        }
+        public static List<String> getPlayers()
+        {
+            List<String> players = new List<string>();
+            MySqlConnection connectionToDb = connection();
+            MySqlCommand command = new MySqlCommand($"SELECT * FROM players", connectionToDb);
+            connectionToDb.Open();
+            MySqlDataReader dataReader = command.ExecuteReader();
+            if (dataReader.HasRows)
+            {
+                while (dataReader.Read())
+                {
+                    players.Add(dataReader["nick"].ToString());
+                }
+                return players;
+            }
+            else
+            {
+                return null;
+            }
+
+        }
+        
     }
 }

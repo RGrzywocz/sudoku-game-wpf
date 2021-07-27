@@ -1,15 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace SudokuProjekt.Model
+﻿namespace SudokuProjekt.Model
 {
     class board
     {
+        #region zmienne
         private int[,] cells = new int[9, 9];
-
+        public int boardId = 0;
         public int[,] Cells { 
             get 
             {
@@ -20,17 +15,28 @@ namespace SudokuProjekt.Model
                 cells = value;
             }
         }
+        #endregion
 
-        public int getCell(int row, int column)
-        {
-            return Cells[row, column];
-        }
+        #region konstruktory
         public board()
         {
             cells = new int[9, 9];
         }
-        public board(int[,] boardInput) {
+        public board(int[,] boardInput) 
+        {
             cells = boardInput.Clone() as int[,];
+        }
+        public board(int[,] boardInput, int id)
+        {
+            cells = boardInput.Clone() as int[,];
+            boardId = id;
+        }
+        #endregion
+
+        #region metody
+        public int getCell(int row, int column)
+        {
+            return Cells[row, column];
         }
         public void updateCell(int number, int row, int column)
         {
@@ -52,5 +58,7 @@ namespace SudokuProjekt.Model
             }
             return true;
         }
+
+        #endregion
     }
 }
